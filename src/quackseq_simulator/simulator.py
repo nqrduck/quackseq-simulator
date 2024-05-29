@@ -7,7 +7,7 @@ from .simulator_controller import SimulatorController
 class Simulator(Spectrometer):
     def __init__(self):
         self.model = SimulatorModel()
-        self.controller = SimulatorController(self.model)
+        self.controller = SimulatorController(self)
 
     def run_sequence(self, sequence):
         result = self.controller.run_sequence(sequence)

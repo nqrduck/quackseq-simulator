@@ -19,10 +19,10 @@ logger = logging.getLogger(__name__)
 class SimulatorController(SpectrometerController):
     """The controller class for the nqrduck simulator module."""
 
-    def __init__(self, model):
+    def __init__(self, simulator):
         """Initializes the SimulatorController."""
         super().__init__()
-        self.model = model
+        self.simulator = simulator
 
     def run_sequence(self, sequence: QuackSequence) -> None:
         """This method  is called when the start_measurement signal is received from the core.
@@ -62,7 +62,7 @@ class SimulatorController(SpectrometerController):
             result = result[evidx]
 
         # Measurement name date + module + target frequency + averages + sequence name
-        name = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Simulator - {self.model.target_frequency / 1e6} MHz - {self.model.averages} averages - {sequence.name}"
+        name = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Simulator - {self.simulator.model.target_frequency / 1e6} MHz - {self.simulator.model.averages} averages - {sequence.name}"
         logger.debug(f"Measurement name: {name}")
 
         measurement_data = Measurement(
@@ -81,7 +81,7 @@ class SimulatorController(SpectrometerController):
         Returns:
             Sample: The sample object created from the settings.
         """
-        model = self.model
+        model = self.simulator.model
         atom_density = None
         sample_volume = None
         sample_length = None
@@ -190,7 +190,7 @@ class SimulatorController(SpectrometerController):
         Returns:
             Simulation: The simulation object created from the settings and the pulse sequence.
         """
-        model = self.model
+        model = self.simulator.model
 
         # noise = float(model.get_setting_by_name(model.NOISE).value)
         simulation = Simulation(
@@ -222,7 +222,9 @@ class SimulatorController(SpectrometerController):
             float: The dwell time in seconds.
         """
         n_points = int(
-            self.model.get_setting_by_display_name(self.model.NUMBER_POINTS).value
+            self.simulator.model.get_setting_by_display_name(
+                self.simulator.model.NUMBER_POINTS
+            ).value
         )
         simulation_length = self.calculate_simulation_length(sequence)
         dwell_time = simulation_length / n_points

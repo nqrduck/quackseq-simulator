@@ -111,6 +111,7 @@ class SimulatorModel(SpectrometerModel):
             "Adds a specified level of random noise to the simulation to mimic real-world signal variations.",
             min_value=0,
             max_value=100,
+            slider=True,
         )
         self.add_setting("noise", noise_setting)
 
@@ -185,6 +186,7 @@ class SimulatorModel(SpectrometerModel):
             "The absolute temperature during the experiment. This influences the SNR of the measurement.",
             min_value=0.1,
             max_value=400,
+            slider=True,
         )
         self.add_setting("temperature", temperature_setting)
 
@@ -195,6 +197,7 @@ class SimulatorModel(SpectrometerModel):
             "The signal loss occurring in the transmission path, affecting the effective RF pulse power.",
             min_value=0.1,
             max_value=60,
+            slider=True,
         )
         self.add_setting("loss_tx", loss_tx_setting)
 
@@ -205,6 +208,7 @@ class SimulatorModel(SpectrometerModel):
             "The signal loss in the reception path, which can reduce the signal that is ultimately detected.",
             min_value=0.1,
             max_value=60,
+            slider=True,
         )
         self.add_setting("loss_rx", loss_rx_setting)
 
@@ -214,7 +218,9 @@ class SimulatorModel(SpectrometerModel):
             2884,
             "Conversion factor  (spectrometer units / V)",
         )
-        self.add_setting("conversion_factor", conversion_factor_setting)  # Conversion factor for the LimeSDR based spectrometer
+        self.add_setting(
+            "conversion_factor", conversion_factor_setting
+        )  # Conversion factor for the LimeSDR based spectrometer
 
         # Sample settings
         sample_name_setting = StringSetting(
