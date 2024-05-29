@@ -15,3 +15,7 @@ class Simulator(Spectrometer):
 
     def set_averages(self, value: int):
         self.model.average = value
+
+    @property
+    def settings(self):
+        return self.model.settings

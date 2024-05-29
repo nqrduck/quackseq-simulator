@@ -48,7 +48,10 @@ class SimulatorController(SpectrometerController):
         result = simulation.simulate()
 
         tdx = (
-            np.linspace(0, float(self.calculate_simulation_length(sequence)), len(result)) * 1e6
+            np.linspace(
+                0, float(self.calculate_simulation_length(sequence)), len(result)
+            )
+            * 1e6
         )
 
         rx_begin, rx_stop = self.translate_rx_event(sequence)
@@ -84,48 +87,18 @@ class SimulatorController(SpectrometerController):
         sample_length = None
         sample_diameter = None
 
-        for samplesetting in model.settings[self.model.SAMPLE]:
-            logger.debug("Sample setting: %s", samplesetting.name)
-
-            if samplesetting.name == model.NAME:
-                name = samplesetting.value
-            elif samplesetting.name == model.DENSITY:
-                density = float(samplesetting.value)
-            elif samplesetting.name == model.MOLAR_MASS:
-                molar_mass = float(samplesetting.value)
-            elif samplesetting.name == model.RESONANT_FREQUENCY:
-                resonant_frequency = float(samplesetting.value)
-            elif samplesetting.name == model.GAMMA:
-                gamma = float(samplesetting.value)
-            elif samplesetting.name == model.NUCLEAR_SPIN:
-                nuclear_spin = float(samplesetting.value)
-            elif samplesetting.name == model.SPIN_FACTOR:
-                spin_factor = float(samplesetting.value)
-            elif samplesetting.name == model.POWDER_FACTOR:
-                powder_factor = float(samplesetting.value)
-            elif samplesetting.name == model.FILLING_FACTOR:
-                filling_factor = float(samplesetting.value)
-            elif samplesetting.name == model.T1:
-                T1 = float(samplesetting.value)
-            elif samplesetting.name == model.T2:
-                T2 = float(samplesetting.value)
-            elif samplesetting.name == model.T2_STAR:
-                T2_star = float(samplesetting.value)
-            elif samplesetting.name == model.ATOM_DENSITY:
-                atom_density = float(samplesetting.value)
-            elif samplesetting.name == model.SAMPLE_VOLUME:
-                sample_volume = float(samplesetting.value)
-            elif samplesetting.name == model.SAMPLE_LENGTH:
-                sample_length = float(samplesetting.value)
-            elif samplesetting.name == model.SAMPLE_DIAMETER:
-                sample_diameter = float(samplesetting.value)
-            else:
-                logger.warning("Unknown sample setting: %s", samplesetting.name)
-                self.module.nqrduck_signal.emit(
-                    "notification",
-                    ["Error", "Unknown sample setting: " + samplesetting.name],
-                )
-                return None
+        name = model.settings.sample_name
+        density = model.settings.density
+        molar_mass = model.settings.molar_mass
+        resonant_frequency = model.settings.resonant_frequency
+        gamma = model.settings.gamma
+        nuclear_spin = model.settings.nuclear_spin
+        spin_factor = model.settings.spin_factor
+        powder_factor = model.settings.powder_factor
+        filling_factor = model.settings.filling_factor
+        T1 = model.settings.T1
+        T2 = model.settings.T2
+        T2_star = model.settings.T2_star
 
         sample = Sample(
             name=name,
@@ -147,7 +120,9 @@ class SimulatorController(SpectrometerController):
         )
         return sample
 
-    def translate_pulse_sequence(self,  sequence : QuackSequence, dwell_time: float) -> PulseArray:
+    def translate_pulse_sequence(
+        self, sequence: QuackSequence, dwell_time: float
+    ) -> PulseArray:
         """This method translates the pulse sequence from the core to a PulseArray object needed for the simulation.
 
         Args:
@@ -221,51 +196,39 @@ class SimulatorController(SpectrometerController):
         simulation = Simulation(
             sample=sample,
             pulse=pulse_array,
-            number_isochromats=int(
-                model.get_setting_by_name(model.NUMBER_ISOCHROMATS).value
-            ),
-            initial_magnetization=float(
-                model.get_setting_by_name(model.INITIAL_MAGNETIZATION).value
-            ),
-            gradient=float(model.get_setting_by_name(model.GRADIENT).value),
-            noise=float(model.get_setting_by_name(model.NOISE).value),
-            length_coil=float(model.get_setting_by_name(model.LENGTH_COIL).value),
-            diameter_coil=float(model.get_setting_by_name(model.DIAMETER_COIL).value),
-            number_turns=float(model.get_setting_by_name(model.NUMBER_TURNS).value),
-            q_factor_transmit=float(
-                model.get_setting_by_name(model.Q_FACTOR_TRANSMIT).value
-            ),
-            q_factor_receive=float(
-                model.get_setting_by_name(model.Q_FACTOR_RECEIVE).value
-            ),
-            power_amplifier_power=float(
-                model.get_setting_by_name(model.POWER_AMPLIFIER_POWER).value
-            ),
-            gain=float(model.get_setting_by_name(model.GAIN).value),
-            temperature=float(model.get_setting_by_name(model.TEMPERATURE).value),
+            number_isochromats=int(model.settings.number_isochromats),
+            initial_magnetization=float(model.settings.initial_magnetization),
+            gradient=float(model.settings.gradient),
+            noise=float(model.settings.noise),
+            length_coil=float(model.settings.length_coil),
+            diameter_coil=float(model.settings.diameter_coil),
+            number_turns=float(model.settings.number_turns),
+            q_factor_transmit=float(model.settings.q_factor_transmit),
+            q_factor_receive=float(model.settings.q_factor_receive),
+            power_amplifier_power=float(model.settings.power_amplifier_power),
+            gain=float(model.settings.gain),
+            temperature=float(model.settings.temperature),
             averages=int(model.averages),
-            loss_TX=float(model.get_setting_by_name(model.LOSS_TX).value),
-            loss_RX=float(model.get_setting_by_name(model.LOSS_RX).value),
-            conversion_factor=float(
-                model.get_setting_by_name(model.CONVERSION_FACTOR).value
-            ),
+            loss_TX=float(model.settings.loss_tx),
+            loss_RX=float(model.settings.loss_rx),
+            conversion_factor=float(model.settings.conversion_factor),
         )
         return simulation
 
-    def calculate_dwelltime(self, sequence : QuackSequence) -> float:
+    def calculate_dwelltime(self, sequence: QuackSequence) -> float:
         """This method calculates the dwell time based on the settings and the pulse sequence.
 
         Returns:
             float: The dwell time in seconds.
         """
         n_points = int(
-            self.model.get_setting_by_name(self.model.NUMBER_POINTS).value
+            self.model.get_setting_by_display_name(self.model.NUMBER_POINTS).value
         )
         simulation_length = self.calculate_simulation_length(sequence)
         dwell_time = simulation_length / n_points
         return dwell_time
 
-    def calculate_simulation_length(self, sequence : QuackSequence) -> float:
+    def calculate_simulation_length(self, sequence: QuackSequence) -> float:
         """This method calculates the simulation length based on the settings and the pulse sequence.
 
         Returns:
@@ -277,14 +240,14 @@ class SimulatorController(SpectrometerController):
             simulation_length += event.duration
         return simulation_length
 
-    def translate_rx_event(self, sequence : QuackSequence) -> tuple:
+    def translate_rx_event(self, sequence: QuackSequence) -> tuple:
         """This method translates the RX event of the pulse sequence to the limr object.
 
         Returns:
         tuple: A tuple containing the start and stop time of the RX event in µs
         """
         # This is a correction factor for the RX event. The offset of the first pulse is 2.2µs longer than from the specified samples.
-        events =  sequence.events
+        events = sequence.events
 
         previous_events_duration = 0
         # offset = 0
@@ -314,41 +277,3 @@ class SimulatorController(SpectrometerController):
 
         else:
             return None, None
-
-    def set_frequency(self, value: str) -> None:
-        """This method is called when the set_frequency signal is received from the core.
-
-        For the simulator this just prints a  warning that the simulator is selected.
-
-        Args:
-            value (str) : The new frequency in MHz.
-        """
-        logger.debug("Setting frequency to: %s", value)
-        try:
-            self.module.model.target_frequency = float(value)
-            logger.debug("Successfully set frequency to: %s", value)
-        except ValueError:
-            logger.warning("Could not set frequency to: %s", value)
-            self.module.nqrduck_signal.emit(
-                "notification", ["Error", "Could not set frequency to: " + value]
-            )
-            self.module.nqrduck_signal.emit("failure_set_frequency", value)
-
-    def set_averages(self, value: str) -> None:
-        """This method is called when the set_averages signal is received from the core.
-
-        It sets the averages in the model used for the simulation.
-
-        Args:
-            value (str): The value to set the averages to.
-        """
-        logger.debug("Setting averages to: %s", value)
-        try:
-            self.module.model.averages = int(value)
-            logger.debug("Successfully set averages to: %s", value)
-        except ValueError:
-            logger.warning("Could not set averages to: %s", value)
-            self.module.nqrduck_signal.emit(
-                "notification", ["Error", "Could not set averages to: " + value]
-            )
-            self.module.nqrduck_signal.emit("failure_set_averages", value)

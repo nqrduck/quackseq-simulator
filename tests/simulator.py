@@ -24,6 +24,8 @@ class TestQuackSequence(unittest.TestCase):
         sim = Simulator()
         sim.set_averages(100)
 
+        sim.settings.noise = 0
+
         result = sim.run_sequence(seq)
         self.assertIsNotNone(result)
         self.assertTrue(hasattr(result, "tdx"))
