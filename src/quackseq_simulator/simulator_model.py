@@ -7,7 +7,6 @@ from quackseq.spectrometer.spectrometer_settings import (
     FloatSetting,
     StringSetting,
 )
-from quackseq.pulseparameters import TXPulse, RXReadout
 
 logger = logging.getLogger(__name__)
 
