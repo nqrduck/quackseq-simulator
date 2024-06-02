@@ -22,8 +22,8 @@ class SimulatorModel(SpectrometerModel):
     NOISE = "Noise (uV)"
 
     # Hardware settings
-    LENGTH_COIL = "Length coil (m)"
-    DIAMETER_COIL = "Diameter coil (m)"
+    LENGTH_COIL = "Length coil (mm)"
+    DIAMETER_COIL = "Diameter coil (mm)"
     NUMBER_TURNS = "Number turns"
     Q_FACTOR_TRANSMIT = "Q factor Transmit"
     Q_FACTOR_RECEIVE = "Q factor Receive"
@@ -39,15 +39,15 @@ class SimulatorModel(SpectrometerModel):
     SAMPLE_NAME = "Name"
     DENSITY = "Density (g/cm^3)"
     MOLAR_MASS = "Molar mass (g/mol)"
-    RESONANT_FREQUENCY = "Resonant freq. (Hz)"
-    GAMMA = "Gamma (Hz/T)"
+    RESONANT_FREQUENCY = "Resonant freq. (MHz)"
+    GAMMA = "Gamma (MHz/T)"
     NUCLEAR_SPIN = "Nuclear spin"
     SPIN_FACTOR = "Spin factor"
     POWDER_FACTOR = "Powder factor"
     FILLING_FACTOR = "Filling factor"
-    T1 = "T1 (s)"
-    T2 = "T2 (s)"
-    T2_STAR = "T2* (s)"
+    T1 = "T1 (µs)"
+    T2 = "T2 (µs)"
+    T2_STAR = "T2* (µs)"
     ATOM_DENSITY = "Atom density (1/cm^3)"
     SAMPLE_VOLUME = "Sample volume (m^3)"
     SAMPLE_LENGTH = "Sample length (m)"
@@ -118,18 +118,20 @@ class SimulatorModel(SpectrometerModel):
         coil_length_setting = FloatSetting(
             self.LENGTH_COIL,
             self.HARDWARE,
-            30e-3,
+            30,
             "The length of the sample coil within the hardware setup.",
-            min_value=1e-3,
+            min_value=1,
+            suffix="mm",
         )
         self.add_setting("length_coil", coil_length_setting)
 
         coil_diameter_setting = FloatSetting(
             self.DIAMETER_COIL,
             self.HARDWARE,
-            8e-3,
+            8,
             "The diameter of the sample coil.",
-            min_value=1e-3,
+            min_value=1,
+            suffix="mm",
         )
         self.add_setting("diameter_coil", coil_diameter_setting)
 
@@ -251,18 +253,20 @@ class SimulatorModel(SpectrometerModel):
         resonant_frequency_setting = FloatSetting(
             self.RESONANT_FREQUENCY,
             self.SAMPLE,
-            83.56e6,
+            83.56,
             "The resonant frequency of the observed transition.",
-            min_value=1e5,
+            min_value=1,
+            suffix="MHz",
         )
         self.add_setting("resonant_frequency", resonant_frequency_setting)
 
         gamma_setting = FloatSetting(
             self.GAMMA,
             self.SAMPLE,
-            4.342e7,
+            43.42,
             "The gyromagnetic ratio of the sample’s nuclei.",
-            min_value=0,
+            min_value=1,
+            suffix="MHz/T",
         )
         self.add_setting("gamma", gamma_setting)
 
@@ -307,27 +311,30 @@ class SimulatorModel(SpectrometerModel):
         t1_setting = FloatSetting(
             self.T1,
             self.SAMPLE,
-            83.5e-5,
+            83,
             "The longitudinal or spin-lattice relaxation time of the sample, influencing signal recovery between pulses.",
-            min_value=1e-6,
+            min_value=1,
+            suffix="µs",
         )
         self.add_setting("T1", t1_setting)
 
         t2_setting = FloatSetting(
             self.T2,
             self.SAMPLE,
-            396e-6,
+            396,
             "The transverse or spin-spin relaxation time, determining the rate at which spins dephase and the signal decays in the xy plane",
-            min_value=1e-6,
+            min_value=1,
+            suffix="µs",
         )
         self.add_setting("T2", t2_setting)
 
         t2_star_setting = FloatSetting(
             self.T2_STAR,
             self.SAMPLE,
-            50e-6,
+            50,
             "The effective transverse relaxation time, incorporating effects of EFG inhomogeneities and other dephasing factors.",
-            min_value=1e-6,
+            min_value=1,
+            suffix="µs",
         )
         self.add_setting("T2_star", t2_star_setting)
 
