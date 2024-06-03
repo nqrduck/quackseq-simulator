@@ -13,7 +13,7 @@ class TestQuackSequence(unittest.TestCase):
 
     def test_event_creation(self):
         seq = QuackSequence("test - event creation")
-        seq.add_pulse_event("tx", "10u", 1, 0, RectFunction())
+        seq.add_pulse_event("tx", "10u", 100, 0, RectFunction())
         seq.add_blank_event("blank", "3u")
         seq.add_readout_event("rx", "100u")
         seq.add_blank_event("TR", "1m")
@@ -42,7 +42,7 @@ class TestQuackSequence(unittest.TestCase):
 
         tx = Event("tx", "10u", seq)
         seq.add_event(tx)
-        seq.set_tx_amplitude(tx, 1)
+        seq.set_tx_amplitude(tx, 100)
         seq.set_tx_phase(tx, 0)
 
         json = seq.to_json()
