@@ -13,9 +13,9 @@ class TestQuackSequence(unittest.TestCase):
 
     def test_event_creation(self):
         seq = QuackSequence("test - event creation")
-        seq.add_pulse_event("tx", "10u", 100, 0, RectFunction())
+        seq.add_pulse_event("tx", "10u", 100, 90.0, RectFunction())
         seq.add_blank_event("blank", "3u")
-        seq.add_readout_event("rx", "100u")
+        seq.add_readout_event("rx", "100u", phase=90.0)
         seq.add_blank_event("TR", "1m")
 
         json = seq.to_json()
@@ -34,7 +34,10 @@ class TestQuackSequence(unittest.TestCase):
         self.assertGreater(len(result.tdy), 0)
 
         # Plotting the result can be useful for visual inspection during development
-        plt.plot(result.tdx, abs(result.tdy))
+        plt.plot(result.tdx, result.tdy.imag, label="imaginary")
+        plt.plot(result.tdx, result.tdy.real, label="real")
+        plt.plot(result.tdx, abs(result.tdy), label="abs")
+        plt.legend()
         plt.show()
 
     def test_simulation_run_sequence(self):
