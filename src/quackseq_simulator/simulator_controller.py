@@ -52,7 +52,7 @@ class SimulatorController(SpectrometerController):
             * 1e6
         )
 
-        rx_begin, rx_stop = self.translate_rx_event(sequence)
+        rx_begin, rx_stop, phase = self.translate_rx_event(sequence)
         # If we have a RX event, we need to cut the result to the RX event
         if rx_begin and rx_stop:
             evidx = np.where((tdx > rx_begin) & (tdx < rx_stop))[0]
@@ -70,6 +70,9 @@ class SimulatorController(SpectrometerController):
             sample.resonant_frequency,
             # frequency_shift=self.module.model.if_frequency,
         )
+
+        if phase:
+            measurement_data.phase_shift(phase)
 
         return measurement_data
 
