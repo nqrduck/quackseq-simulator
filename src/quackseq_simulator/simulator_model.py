@@ -6,6 +6,7 @@ from quackseq.spectrometer.spectrometer_settings import (
     IntSetting,
     FloatSetting,
     StringSetting,
+    SelectionSetting,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ class SimulatorModel(SpectrometerModel):
 
     # Sample settings, this will  be done in a separate module later on
     SAMPLE_NAME = "Name"
+    NUMBER_ATOMS = "Number of atoms"
     DENSITY = "Density (g/cm^3)"
     MOLAR_MASS = "Molar mass (g/mol)"
     RESONANT_FREQUENCY = "Resonant freq. (MHz)"
@@ -232,6 +234,15 @@ class SimulatorModel(SpectrometerModel):
         )
         self.add_setting("sample_name", sample_name_setting)
 
+        sample_n_atoms_setting = IntSetting(
+            self.NUMBER_ATOMS,
+            self.SAMPLE,
+            0,
+            "The number of atoms in the sample.",
+            min_value=0,
+        )
+        self.add_setting("n_atoms", sample_n_atoms_setting)
+
         density_setting = FloatSetting(
             self.DENSITY,
             self.SAMPLE,
@@ -270,12 +281,13 @@ class SimulatorModel(SpectrometerModel):
         )
         self.add_setting("gamma", gamma_setting)
 
-        nuclear_spin_setting = FloatSetting(
+        spin_options = ["3/2", "5/2", "7/2", "9/2"]
+        nuclear_spin_setting = SelectionSetting(
             self.NUCLEAR_SPIN,
             self.SAMPLE,
-            9 / 2,
-            "The nuclear spin of the sample’s nuclei.",
-            min_value=0,
+            spin_options,
+            default="9/2",
+            description="The nuclear spin of the sample’s nuclei.",
         )
         self.add_setting("nuclear_spin", nuclear_spin_setting)
 

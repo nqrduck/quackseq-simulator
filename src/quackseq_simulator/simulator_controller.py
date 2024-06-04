@@ -89,6 +89,7 @@ class SimulatorController(SpectrometerController):
         sample_diameter = None
 
         name = model.settings.sample_name
+        n_atoms = model.settings.n_atoms
         density = model.settings.density
         molar_mass = model.settings.molar_mass
         resonant_frequency = model.settings.resonant_frequency
@@ -103,6 +104,7 @@ class SimulatorController(SpectrometerController):
 
         sample = Sample(
             name=name,
+            atoms=n_atoms,
             density=density,
             molar_mass=molar_mass,
             resonant_frequency=resonant_frequency,
