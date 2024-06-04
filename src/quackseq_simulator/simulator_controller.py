@@ -9,9 +9,7 @@ from quackseq.measurement import Measurement
 from quackseq.pulseparameters import TXPulse, RXReadout
 from quackseq.pulsesequence import QuackSequence
 
-from nqr_blochsimulator.classes.pulse import PulseArray
-from nqr_blochsimulator.classes.sample import Sample
-from nqr_blochsimulator.classes.simulation import Simulation
+from nqr_blochsimulator import Sample, Simulation, PulseArray
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +133,8 @@ class SimulatorController(SpectrometerController):
         events = sequence.events
 
         amplitude_array = list()
+        phase_array = list()
+
         for event in events:
             logger.debug("Event %s has parameters: %s", event.name, event.parameters)
             for parameter in event.parameters.values():
@@ -159,6 +159,13 @@ class SimulatorController(SpectrometerController):
                     )
 
                     amplitude_array.append(pulse_amplitude)
+                    
+                    # Phase stuff
+                    phase = parameter.get_option_by_name(TXPulse.TX_PHASE).value
+                    # Degrees to radians
+                    phase = np.radians(phase)
+                    phase_array.append([phase for _ in range(len(pulse_amplitude))])
+
                 elif (
                     parameter.name == sequence.TX_PULSE
                     and parameter.get_option_by_name(TXPulse.RELATIVE_AMPLITUDE).value
@@ -166,11 +173,11 @@ class SimulatorController(SpectrometerController):
                 ):
                     # If we have a wait, we need to add it to the pulse array
                     amplitude_array.append(np.zeros(int(event.duration / dwell_time)))
+                    phase_array.append(np.zeros(int(event.duration / dwell_time)))
+                    
 
         amplitude_array = np.concatenate(amplitude_array)
-
-        # This has not yet been implemented right now the phase is always 0
-        phase_array = np.zeros(len(amplitude_array))
+        phase_array = np.concatenate(phase_array)   
 
         pulse_array = PulseArray(
             pulseamplitude=amplitude_array,
