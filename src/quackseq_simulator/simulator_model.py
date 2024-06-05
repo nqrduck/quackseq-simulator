@@ -109,7 +109,7 @@ class SimulatorModel(SpectrometerModel):
             self.NOISE,
             self.SIMULATION,
             2,
-            "Adds a specified level of random noise to the simulation to mimic real-world signal variations.",
+            "Adds a specified level of noise for one average without gain. The noise is still multiplied with the receiver gain, as is the signal. The noise scales with the square root of the averages whereas the signal scales with the number of averages.",
             min_value=0,
             max_value=100,
             slider=True,
@@ -240,6 +240,7 @@ class SimulatorModel(SpectrometerModel):
             0,
             "The number of atoms in the sample.",
             min_value=0,
+            scientific_notation=True,
         )
         self.add_setting("n_atoms", sample_n_atoms_setting)
 
@@ -276,7 +277,7 @@ class SimulatorModel(SpectrometerModel):
             self.SAMPLE,
             43.42,
             "The gyromagnetic ratio of the sample’s nuclei.",
-            min_value=1,
+            min_value=0.001,
             suffix="MHz/T",
         )
         self.add_setting("gamma", gamma_setting)
