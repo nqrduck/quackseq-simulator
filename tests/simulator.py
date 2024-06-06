@@ -1,13 +1,15 @@
 import unittest
 import logging
 import matplotlib.pyplot as plt
+from quackseq.phase_table import PhaseTable
 from quackseq.pulsesequence import QuackSequence
 from quackseq.event import Event
 from quackseq.functions import RectFunction
 from quackseq_simulator.simulator import Simulator
 
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
+logger = logging.getLogger(__name__)
 
 class TestQuackSequence(unittest.TestCase):
 
@@ -17,9 +19,6 @@ class TestQuackSequence(unittest.TestCase):
         seq.add_blank_event("blank", "3u")
         seq.add_readout_event("rx", "100u", phase=90.0)
         seq.add_blank_event("TR", "1m")
-
-        json = seq.to_json()
-        print(json)
 
         sim = Simulator()
         sim.set_averages(100)
@@ -48,9 +47,6 @@ class TestQuackSequence(unittest.TestCase):
         seq.set_tx_amplitude(tx, 100)
         seq.set_tx_phase(tx, 0)
 
-        json = seq.to_json()
-        print(json)
-
         rect = RectFunction()
         seq.set_tx_shape(tx, rect)
 
@@ -78,6 +74,42 @@ class TestQuackSequence(unittest.TestCase):
         plt.plot(result.tdx, abs(result.tdy))
         plt.show()
 
+    def test_phase_cycling(self):
+        seq = QuackSequence("test - phase cycling")
+
+        tx = Event("tx", "10u", seq)
+        seq.add_event(tx)
+        seq.set_tx_amplitude(tx, 100)
+        seq.set_tx_phase(tx, 0)
+        seq.set_tx_n_phase_cycles(tx, 2)
+        seq.set_tx_phase_cycle_group(tx, 0)
+
+        rect = RectFunction()
+        seq.set_tx_shape(tx, rect)
+
+        tx2 = Event("tx2", "10u", seq)
+        seq.add_event(tx2)
+        seq.set_tx_amplitude(tx2, 100)
+        seq.set_tx_phase(tx2, 1)
+        seq.set_tx_n_phase_cycles(tx2, 4)
+        seq.set_tx_phase_cycle_group(tx2, 1)
+
+        tx3 = Event("tx3", "10u", seq)
+        seq.add_event(tx3)
+        seq.set_tx_amplitude(tx3, 100)
+        seq.set_tx_phase(tx3, 2)
+        seq.set_tx_n_phase_cycles(tx3, 3)
+        seq.set_tx_phase_cycle_group(tx3, 1)
+
+        sim = Simulator()
+        sim.set_averages(100)
+
+        result = sim.run_sequence(seq)
+
+        plt.plot(result.tdx, abs(result.tdy))
+        plt.show()
+
+        phase_table = PhaseTable(seq)
 
 if __name__ == "__main__":
     unittest.main()
