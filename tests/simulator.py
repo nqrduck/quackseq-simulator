@@ -29,13 +29,15 @@ class TestQuackSequence(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue(hasattr(result, "tdx"))
         self.assertTrue(hasattr(result, "tdy"))
-        self.assertGreater(len(result.tdx), 0)
-        self.assertGreater(len(result.tdy), 0)
+        self.assertGreater(len(result.tdx[0]), 0)
+        self.assertGreater(len(result.tdy[0]), 0)
 
-        # Plotting the result can be useful for visual inspection during development
-        plt.plot(result.tdx, result.tdy.imag, label="imaginary")
-        plt.plot(result.tdx, result.tdy.real, label="real")
-        plt.plot(result.tdx, abs(result.tdy), label="abs")
+        
+        logger.info("Plotting imaginary part")
+        plt.plot(result.tdx[0], result.tdy[0].imag, label="imaginary")
+        logger.info("Plotting real part")
+        plt.plot(result.tdx[0], result.tdy[0].real, label="real")
+        plt.plot(result.tdx[0], abs(result.tdy[0]), label="abs")
         plt.legend()
         plt.show()
 
@@ -67,11 +69,11 @@ class TestQuackSequence(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue(hasattr(result, "tdx"))
         self.assertTrue(hasattr(result, "tdy"))
-        self.assertGreater(len(result.tdx), 0)
-        self.assertGreater(len(result.tdy), 0)
+        self.assertGreater(len(result.tdx[0]), 0)
+        self.assertGreater(len(result.tdy[0]), 0)
 
         # Plotting the result can be useful for visual inspection during development
-        plt.plot(result.tdx, abs(result.tdy))
+        plt.plot(result.tdx[0], abs(result.tdy[0]))
         plt.show()
 
     def test_phase_array_generation(self):
@@ -106,7 +108,7 @@ class TestQuackSequence(unittest.TestCase):
 
         result = sim.run_sequence(seq)
 
-        plt.plot(result.tdx, abs(result.tdy))
+        plt.plot(result.tdx[0], abs(result.tdy[0]))
         plt.show()
 
         phase_table = PhaseTable(seq)
@@ -153,9 +155,9 @@ class TestQuackSequence(unittest.TestCase):
 
         result = Simulator().run_sequence(seq)
         plt.title("Phase cycling")
-        plt.plot(result.tdx, abs(result.tdy), label="abs")
-        plt.plot(result.tdx, result.tdy.real, label="real")
-        plt.plot(result.tdx, result.tdy.imag, label="imag")
+        plt.plot(result.tdx[0], abs(result.tdy[0]), label="abs")
+        plt.plot(result.tdx[0], result.tdy[0].real, label="real")
+        plt.plot(result.tdx[0], result.tdy[0].imag, label="imag")
         plt.legend()
         plt.show()
         # rx = Event("rx", "100u", seq)

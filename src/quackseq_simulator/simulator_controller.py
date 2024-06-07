@@ -75,7 +75,7 @@ class SimulatorController(SpectrometerController):
         )
 
         if phase:
-            measurement_data.phase_shift(phase)
+            measurement_data.phase_shift(phase, 0)
 
         return measurement_data
 
