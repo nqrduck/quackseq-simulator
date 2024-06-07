@@ -74,8 +74,8 @@ class TestQuackSequence(unittest.TestCase):
         plt.plot(result.tdx, abs(result.tdy))
         plt.show()
 
-    def test_phase_cycling(self):
-        seq = QuackSequence("test - phase cycling")
+    def test_phase_array_generation(self):
+        seq = QuackSequence("test - phase array generation")
 
         tx = Event("tx", "10u", seq)
         seq.add_event(tx)
@@ -99,7 +99,7 @@ class TestQuackSequence(unittest.TestCase):
         seq.set_tx_amplitude(tx3, 100)
         seq.set_tx_phase(tx3, 2)
         seq.set_tx_n_phase_cycles(tx3, 3)
-        seq.set_tx_phase_cycle_group(tx3, 1)
+        seq.set_tx_phase_cycle_group(tx3, 3)
 
         sim = Simulator()
         sim.set_averages(100)
@@ -111,5 +111,55 @@ class TestQuackSequence(unittest.TestCase):
 
         phase_table = PhaseTable(seq)
 
+        logger.info(phase_table.n_phase_cycles)
+        self.assertEqual(phase_table.n_phase_cycles, 24)
+        self.assertEqual(phase_table.n_parameters, 3)
+
+    def test_phase_cycling(self):
+
+        seq = QuackSequence("test - phase cycling")
+
+        # Simple spin echo sequence with phase cycling. 
+        # Create the first 90 degree pulse
+        pi_half = Event("pi_half", "6u", seq)
+        seq.add_event(pi_half)
+        seq.set_tx_amplitude(pi_half, 100)
+        seq.set_tx_phase(pi_half, 0)
+        seq.set_tx_n_phase_cycles(pi_half, 4) # 0 90 180 270
+        seq.set_tx_phase_cycle_group(pi_half, 0) 
+
+        # Wait for TE/2 (approx)
+        seq.add_blank_event("te/2", "150u")
+
+        # Create the 180 degree pulse
+        pi  = Event("pi", "12u", seq)
+        seq.add_event(pi)
+        seq.set_tx_amplitude(pi, 100)
+        seq.set_tx_phase(pi, 180)
+        seq.set_tx_n_phase_cycles(pi, 1)
+        seq.set_tx_phase_cycle_group(pi, 0)
+
+        # Wait another blanking time
+        seq.add_blank_event("blank", "100u")
+
+        # Create phase table
+        phase_table = PhaseTable(seq)
+
+        # Readout scheme for phase cycling TX pulses have the scheme 0 90 180 270 for the first pulse and 180 always for the second pulse
+        readout_scheme = [(1,0), (1, 270), (1, 180), (1, 90)]
+
+        phase_table.rx_phase_sign = readout_scheme
+
+
+        result = Simulator().run_sequence(seq)
+        plt.title("Phase cycling")
+        plt.plot(result.tdx, abs(result.tdy), label="abs")
+        plt.plot(result.tdx, result.tdy.real, label="real")
+        plt.plot(result.tdx, result.tdy.imag, label="imag")
+        plt.legend()
+        plt.show()
+        # rx = Event("rx", "100u", seq)
+        # seq.add_event(rx)
+        
 if __name__ == "__main__":
     unittest.main()

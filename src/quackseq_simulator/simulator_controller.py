@@ -32,6 +32,9 @@ class SimulatorController(SpectrometerController):
         sample = self.get_sample_from_settings()
         logger.debug("Sample: %s", sample.name)
 
+        # This needs to be called to update the phase array
+        sequence.phase_table.update_phase_array()
+
         dwell_time = self.calculate_dwelltime(sequence)
         logger.debug("Dwell time: %s", dwell_time)
 
