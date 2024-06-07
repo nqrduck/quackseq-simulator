@@ -29,53 +29,64 @@ class SimulatorController(SpectrometerController):
         This will start the simulation based on the settings and the pulse sequence.
         """
         logger.debug("Starting simulation")
-        sample = self.get_sample_from_settings()
-        logger.debug("Sample: %s", sample.name)
 
         # This needs to be called to update the phase array
         sequence.phase_table.update_phase_array()
 
-        dwell_time = self.calculate_dwelltime(sequence)
-        logger.debug("Dwell time: %s", dwell_time)
+        # Get the number of phasecycles
+        number_phasecycles = sequence.phase_table.n_phase_cycles
 
-        try:
-            pulse_array = self.translate_pulse_sequence(sequence, dwell_time)
-        except AttributeError:
-            logger.warning("Could not translate pulse sequence")
-            return
+        # Empty measurement object
+        measurement_data = None
 
-        simulation = self.get_simulation(sample, pulse_array)
+        for cycle in range(number_phasecycles):
 
-        result = simulation.simulate()
+            sample = self.get_sample_from_settings()
+            logger.debug("Sample: %s", sample.name)
 
-        tdx = (
-            np.linspace(
-                0, float(self.calculate_simulation_length(sequence)), len(result)
+            dwell_time = self.calculate_dwelltime(sequence)
+            logger.debug("Dwell time: %s", dwell_time)
+
+            try:
+                pulse_array = self.translate_pulse_sequence(sequence, dwell_time, cycle)
+            except AttributeError:
+                logger.warning("Could not translate pulse sequence")
+                return
+
+            simulation = self.get_simulation(sample, pulse_array)
+
+            result = simulation.simulate()
+
+            tdx = (
+                np.linspace(
+                    0, float(self.calculate_simulation_length(sequence)), len(result)
+                )
+                * 1e6
             )
-            * 1e6
-        )
 
-        rx_begin, rx_stop, phase = self.translate_rx_event(sequence)
-        # If we have a RX event, we need to cut the result to the RX event
-        if rx_begin and rx_stop:
-            evidx = np.where((tdx > rx_begin) & (tdx < rx_stop))[0]
-            tdx = tdx[evidx]
-            result = result[evidx]
+            rx_begin, rx_stop, phase = self.translate_rx_event(sequence)
+            # If we have a RX event, we need to cut the result to the RX event
+            if rx_begin and rx_stop:
+                evidx = np.where((tdx > rx_begin) & (tdx < rx_stop))[0]
+                tdx = tdx[evidx]
+                result = result[evidx]
 
-        # Measurement name date + module + target frequency + averages + sequence name
-        name = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Simulator - {self.simulator.model.target_frequency / 1e6} MHz - {self.simulator.model.averages} averages - {sequence.name}"
-        logger.debug(f"Measurement name: {name}")
+            # Measurement name date + module + target frequency + averages + sequence name
+            name = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Simulator - {self.simulator.model.target_frequency / 1e6} MHz - {self.simulator.model.averages} averages - {sequence.name}"
+            logger.debug(f"Measurement name: {name}")
 
-        measurement_data = Measurement(
-            name,
-            tdx,
-            result / simulation.averages,
-            sample.resonant_frequency,
-            # frequency_shift=self.module.model.if_frequency,
-        )
+            if not measurement_data:
+                measurement_data = Measurement(
+                    name,
+                    tdx,
+                    result / simulation.averages,
+                    sample.resonant_frequency,
+                )
+            else:
+                measurement_data.add_dataset(tdx, result / simulation.averages)
 
-        if phase:
-            measurement_data.phase_shift(phase, 0)
+            if phase:
+                measurement_data.phase_shift(phase, cycle)
 
         return measurement_data
 
@@ -127,13 +138,14 @@ class SimulatorController(SpectrometerController):
         return sample
 
     def translate_pulse_sequence(
-        self, sequence: QuackSequence, dwell_time: float
+        self, sequence: QuackSequence, dwell_time: float, cycle: int
     ) -> PulseArray:
         """This method translates the pulse sequence from the core to a PulseArray object needed for the simulation.
 
         Args:
             sequence (QuackSequence): The pulse sequence from the core.
             dwell_time (float): The dwell time in seconds.
+            cycle (int): The current phase cycle.
 
         Returns:
             PulseArray: The pulse sequence translated to a PulseArray object.
@@ -142,6 +154,12 @@ class SimulatorController(SpectrometerController):
 
         amplitude_array = list()
         phase_array = list()
+
+        # Get the phase_table
+        phase_table = sequence.phase_table.phase_array[cycle]
+
+        # Count the number of TX pulses with relative amplitude > 0
+        n_tx_pulses = 0
 
         for event in events:
             logger.debug("Event %s has parameters: %s", event.name, event.parameters)
@@ -156,6 +174,7 @@ class SimulatorController(SpectrometerController):
                     > 0
                 ):
                     logger.debug(f"Adding pulse: {event.duration} s")
+
                     # If we have a pulse, we need to add it to the pulse array
                     pulse_shape = parameter.get_option_by_name(
                         TXPulse.TX_PULSE_SHAPE
@@ -167,12 +186,13 @@ class SimulatorController(SpectrometerController):
                     )
 
                     amplitude_array.append(pulse_amplitude)
-                    
-                    # Phase stuff
-                    phase = parameter.get_option_by_name(TXPulse.TX_PHASE).value
+
+                    # Phase from the phase table - column is the number of the pulse
+                    phase = phase_table[n_tx_pulses]
                     # Degrees to radians
                     phase = np.radians(phase)
                     phase_array.append([phase for _ in range(len(pulse_amplitude))])
+                    n_tx_pulses += 1
 
                 elif (
                     parameter.name == sequence.TX_PULSE
@@ -182,10 +202,9 @@ class SimulatorController(SpectrometerController):
                     # If we have a wait, we need to add it to the pulse array
                     amplitude_array.append(np.zeros(int(event.duration / dwell_time)))
                     phase_array.append(np.zeros(int(event.duration / dwell_time)))
-                    
 
         amplitude_array = np.concatenate(amplitude_array)
-        phase_array = np.concatenate(phase_array)   
+        phase_array = np.concatenate(phase_array)
 
         pulse_array = PulseArray(
             pulseamplitude=amplitude_array,

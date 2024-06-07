@@ -93,14 +93,14 @@ class TestQuackSequence(unittest.TestCase):
         seq.add_event(tx2)
         seq.set_tx_amplitude(tx2, 100)
         seq.set_tx_phase(tx2, 1)
-        seq.set_tx_n_phase_cycles(tx2, 4)
+        seq.set_tx_n_phase_cycles(tx2, 2)
         seq.set_tx_phase_cycle_group(tx2, 1)
 
         tx3 = Event("tx3", "10u", seq)
         seq.add_event(tx3)
         seq.set_tx_amplitude(tx3, 100)
         seq.set_tx_phase(tx3, 2)
-        seq.set_tx_n_phase_cycles(tx3, 3)
+        seq.set_tx_n_phase_cycles(tx3, 2)
         seq.set_tx_phase_cycle_group(tx3, 3)
 
         sim = Simulator()
@@ -109,12 +109,13 @@ class TestQuackSequence(unittest.TestCase):
         result = sim.run_sequence(seq)
 
         plt.plot(result.tdx[0], abs(result.tdy[0]))
+        plt.plot(result.tdx[1], abs(result.tdy[1]))
         plt.show()
 
         phase_table = PhaseTable(seq)
 
         logger.info(phase_table.n_phase_cycles)
-        self.assertEqual(phase_table.n_phase_cycles, 24)
+        self.assertEqual(phase_table.n_phase_cycles, 8)
         self.assertEqual(phase_table.n_parameters, 3)
 
     def test_phase_cycling(self):
@@ -152,12 +153,13 @@ class TestQuackSequence(unittest.TestCase):
 
         phase_table.rx_phase_sign = readout_scheme
 
-
         result = Simulator().run_sequence(seq)
         plt.title("Phase cycling")
-        plt.plot(result.tdx[0], abs(result.tdy[0]), label="abs")
-        plt.plot(result.tdx[0], result.tdy[0].real, label="real")
-        plt.plot(result.tdx[0], result.tdy[0].imag, label="imag")
+        logger.info(f"Number of data sets {len(result.tdy)}")
+        plt.plot(result.tdx[0], result.tdy[0].real, label="pc 1")
+        plt.plot(result.tdx[1], result.tdy[1].real, label="pc 2")
+        plt.plot(result.tdx[2], result.tdy[2].real, label="pc 3")
+        plt.plot(result.tdx[3], result.tdy[3].real, label="pc 4")
         plt.legend()
         plt.show()
         # rx = Event("rx", "100u", seq)
