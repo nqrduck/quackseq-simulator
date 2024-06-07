@@ -64,7 +64,7 @@ class SimulatorController(SpectrometerController):
                 * 1e6
             )
 
-            rx_begin, rx_stop, phase = self.translate_rx_event(sequence)
+            rx_begin, rx_stop, readout_scheme = self.translate_rx_event(sequence)
             # If we have a RX event, we need to cut the result to the RX event
             if rx_begin and rx_stop:
                 evidx = np.where((tdx > rx_begin) & (tdx < rx_stop))[0]
@@ -85,8 +85,20 @@ class SimulatorController(SpectrometerController):
             else:
                 measurement_data.add_dataset(tdx, result / simulation.averages)
 
-            if phase:
-                measurement_data.phase_shift(phase, cycle)
+            if readout_scheme:
+                measurement_data.phase_shift(readout_scheme[cycle][1], cycle)
+
+
+        if readout_scheme and number_phasecycles > 1:
+            # Apply the readout scheme
+            tdy = np.zeros(len(measurement_data.tdx[0]), dtype=complex)
+            for cycle in range(number_phasecycles):
+                tdy += (readout_scheme[cycle][0] * measurement_data.tdy[cycle])
+
+            measurement_data.add_dataset(measurement_data.tdx[0], tdy)
+
+            logger.info(f"Length of tdy: {len(tdy)}")
+        
 
         return measurement_data
 

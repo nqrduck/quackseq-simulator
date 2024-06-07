@@ -11,13 +11,14 @@ logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
+
 class TestQuackSequence(unittest.TestCase):
 
     def test_event_creation(self):
         seq = QuackSequence("test - event creation")
         seq.add_pulse_event("tx", "10u", 100, 90.0, RectFunction())
         seq.add_blank_event("blank", "3u")
-        seq.add_readout_event("rx", "100u", phase=90.0)
+        seq.add_readout_event("rx", "100u")
         seq.add_blank_event("TR", "1m")
 
         sim = Simulator()
@@ -32,7 +33,6 @@ class TestQuackSequence(unittest.TestCase):
         self.assertGreater(len(result.tdx[0]), 0)
         self.assertGreater(len(result.tdy[0]), 0)
 
-        
         logger.info("Plotting imaginary part")
         plt.plot(result.tdx[0], result.tdy[0].imag, label="imaginary")
         logger.info("Plotting real part")
@@ -72,7 +72,6 @@ class TestQuackSequence(unittest.TestCase):
         self.assertGreater(len(result.tdx[0]), 0)
         self.assertGreater(len(result.tdy[0]), 0)
 
-        # Plotting the result can be useful for visual inspection during development
         plt.plot(result.tdx[0], abs(result.tdy[0]))
         plt.show()
 
@@ -122,20 +121,20 @@ class TestQuackSequence(unittest.TestCase):
 
         seq = QuackSequence("test - phase cycling")
 
-        # Simple spin echo sequence with phase cycling. 
+        # Simple spin echo sequence with phase cycling.
         # Create the first 90 degree pulse
         pi_half = Event("pi_half", "6u", seq)
         seq.add_event(pi_half)
         seq.set_tx_amplitude(pi_half, 100)
         seq.set_tx_phase(pi_half, 0)
-        seq.set_tx_n_phase_cycles(pi_half, 4) # 0 90 180 270
-        seq.set_tx_phase_cycle_group(pi_half, 0) 
+        seq.set_tx_n_phase_cycles(pi_half, 4)  # 0 90 180 270
+        seq.set_tx_phase_cycle_group(pi_half, 0)
 
         # Wait for TE/2 (approx)
         seq.add_blank_event("te/2", "150u")
 
         # Create the 180 degree pulse
-        pi  = Event("pi", "12u", seq)
+        pi = Event("pi", "12u", seq)
         seq.add_event(pi)
         seq.set_tx_amplitude(pi, 100)
         seq.set_tx_phase(pi, 180)
@@ -145,15 +144,9 @@ class TestQuackSequence(unittest.TestCase):
         # Wait another blanking time
         seq.add_blank_event("blank", "100u")
 
-        # Create phase table
-        phase_table = PhaseTable(seq)
-
-        # Readout scheme for phase cycling TX pulses have the scheme 0 90 180 270 for the first pulse and 180 always for the second pulse
-        readout_scheme = [(1,0), (1, 270), (1, 180), (1, 90)]
-
-        phase_table.rx_phase_sign = readout_scheme
-
         result = Simulator().run_sequence(seq)
+
+        # Plotting the results
         plt.title("Phase cycling")
         logger.info(f"Number of data sets {len(result.tdy)}")
         plt.plot(result.tdx[0], result.tdy[0].real, label="pc 1")
@@ -162,8 +155,30 @@ class TestQuackSequence(unittest.TestCase):
         plt.plot(result.tdx[3], result.tdy[3].real, label="pc 4")
         plt.legend()
         plt.show()
-        # rx = Event("rx", "100u", seq)
+
+        rx = Event("rx", "100u", seq)
+        seq.add_event(rx)
+        seq.set_rx(rx, True)
+
+        # Readout scheme for phase cycling TX pulses have the scheme 0 90 180 270 for the first pulse and 180 always for the second pulse
+        readout_scheme = [[1, 0], [1, 270], [1, 180], [1, 90]]
+
+        seq.set_rx_readout_scheme(rx, readout_scheme)
+
+        result = Simulator().run_sequence(seq)
+
+        # Plotting the results
+        plt.title("Phase cycling")
+        logger.info(f"Number of data sets {len(result.tdy)}")
+        plt.plot(result.tdx[0], abs(result.tdy[0]), label="pc 1")
+        plt.plot(result.tdx[1], abs(result.tdy[1]), label="pc 2")
+        plt.plot(result.tdx[2], abs(result.tdy[2]), label="pc 3")
+        plt.plot(result.tdx[3], abs(result.tdy[3]), label="pc 4")
+        plt.plot(result.tdx[4], abs(result.tdy[4]), label="Phase Cycling")
+        plt.legend()
+        plt.show()
         # seq.add_event(rx)
-        
+
+
 if __name__ == "__main__":
     unittest.main()
