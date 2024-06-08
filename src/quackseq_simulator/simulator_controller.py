@@ -91,7 +91,7 @@ class SimulatorController(SpectrometerController):
 
         if readout_scheme and number_phasecycles > 1:
             # Apply the readout scheme
-            tdy = np.zeros(len(measurement_data.tdx[0]), dtype=complex)
+            tdy = np.zeros(len(measurement_data.tdx[0]), dtype=np.complex128)
             for cycle in range(number_phasecycles):
                 tdy += (readout_scheme[cycle][0] * measurement_data.tdy[cycle])
 

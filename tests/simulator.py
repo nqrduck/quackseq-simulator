@@ -137,7 +137,7 @@ class TestQuackSequence(unittest.TestCase):
         pi = Event("pi", "12u", seq)
         seq.add_event(pi)
         seq.set_tx_amplitude(pi, 100)
-        seq.set_tx_phase(pi, 180)
+        seq.set_tx_phase(pi, 90)
         seq.set_tx_n_phase_cycles(pi, 1)
         seq.set_tx_phase_cycle_group(pi, 0)
 
@@ -161,7 +161,7 @@ class TestQuackSequence(unittest.TestCase):
         seq.set_rx(rx, True)
 
         # Readout scheme for phase cycling TX pulses have the scheme 0 90 180 270 for the first pulse and 180 always for the second pulse
-        readout_scheme = [[1, 0], [1, 270], [1, 180], [1, 90]]
+        readout_scheme = [[1, 0], [1, 90], [1, 180], [1, 270]]
 
         seq.set_rx_readout_scheme(rx, readout_scheme)
 
@@ -170,10 +170,10 @@ class TestQuackSequence(unittest.TestCase):
         # Plotting the results
         plt.title("Phase cycling")
         logger.info(f"Number of data sets {len(result.tdy)}")
-        plt.plot(result.tdx[0], abs(result.tdy[0]), label="pc 1")
-        plt.plot(result.tdx[1], abs(result.tdy[1]), label="pc 2")
-        plt.plot(result.tdx[2], abs(result.tdy[2]), label="pc 3")
-        plt.plot(result.tdx[3], abs(result.tdy[3]), label="pc 4")
+        plt.plot(result.tdx[0], result.tdy[0].real, label="pc 1")
+        plt.plot(result.tdx[1], result.tdy[1].real, label="pc 2")
+        plt.plot(result.tdx[2], result.tdy[2].real, label="pc 3")
+        plt.plot(result.tdx[3], result.tdy[3].real, label="pc 4")
         plt.plot(result.tdx[4], abs(result.tdy[4]), label="Phase Cycling")
         plt.legend()
         plt.show()
