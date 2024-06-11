@@ -39,6 +39,8 @@ class SimulatorController(SpectrometerController):
         # Empty measurement object
         measurement_data = None
 
+        readout_scheme = None
+
         for cycle in range(number_phasecycles):
 
             sample = self.get_sample_from_settings()
