@@ -38,7 +38,7 @@ class SimulatorModel(SpectrometerModel):
 
     # Sample settings, this will  be done in a separate module later on
     SAMPLE_NAME = "Name"
-    NUMBER_ATOMS = "Number of atoms per unit volume (1/m^3)"
+    NUMBER_ATOMS = "N. atoms (1/m^3)"
     DENSITY = "Density (g/cm^3)"
     MOLAR_MASS = "Molar mass (g/mol)"
     RESONANT_FREQUENCY = "Resonant freq. (MHz)"
