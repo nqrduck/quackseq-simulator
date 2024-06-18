@@ -5,9 +5,8 @@ The sample is the default BiPh3 NQR sample.
 
 import logging
 
+from quackseq.sequences.SE import create_SE
 from quackseq_simulator.simulator import Simulator
-from quackseq.pulsesequence import QuackSequence
-from quackseq.functions import RectFunction
 from matplotlib import pyplot as plt
 
 if __name__ == "__main__":
@@ -15,19 +14,14 @@ if __name__ == "__main__":
 
     logger = logging.getLogger(__name__)
 
-    seq = QuackSequence("SE")
-    seq.add_pulse_event("pi-half", "3u", 100, 0, RectFunction())
-    seq.add_blank_event("te-half", "150u")
-    seq.add_pulse_event("pi", "6u", 100, 0, RectFunction())
-    seq.add_blank_event("blank", "50u")
-    seq.add_readout_event("rx", "200u")
-
     sim = Simulator()
     sim.set_averages(100)
 
     sim.settings.noise = 1 # microvolts
 
-    result = sim.run_sequence(seq)
+    SE = create_SE()
+
+    result = sim.run_sequence(SE)
     # Plot time and frequency domain next to each other
     plt.subplot(1, 2, 1)
     plt.title("Time domain Simulation of BiPh3 SE")

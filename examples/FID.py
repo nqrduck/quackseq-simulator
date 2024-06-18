@@ -5,9 +5,8 @@ The sample is the default BiPh3 NQR sample.
 
 import logging
 
+from quackseq.sequences.FID import create_FID
 from quackseq_simulator.simulator import Simulator
-from quackseq.pulsesequence import QuackSequence
-from quackseq.functions import RectFunction
 from matplotlib import pyplot as plt
 
 if __name__ == "__main__":
@@ -15,18 +14,16 @@ if __name__ == "__main__":
 
     logger = logging.getLogger(__name__)
 
-    seq = QuackSequence("FID")
-    seq.add_pulse_event("tx", "3u", 100, 0, RectFunction())
-    seq.add_blank_event("blank", "5u")
-    seq.add_readout_event("rx", "100u")
-    seq.add_blank_event("TR", "1m")
-
     sim = Simulator()
     sim.set_averages(100)
 
-    sim.settings.noise = 1 # microvolts
+    sim.settings.noise = 1  # microvolts
 
-    result = sim.run_sequence(seq)
+    FID = create_FID()
+
+    # Run the imported FID sequence
+    result = sim.run_sequence(FID)
+
     # Plot time and frequency domain next to each other
     plt.subplot(1, 2, 1)
     plt.title("Time domain Simulation of BiPh3 FID")

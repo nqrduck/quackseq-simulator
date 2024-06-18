@@ -5,9 +5,8 @@ The sample is the default BiPh3 NQR sample.
 
 import logging
 
+from quackseq.sequences.SEPC import create_SEPC
 from quackseq_simulator.simulator import Simulator
-from quackseq.pulsesequence import QuackSequence
-from quackseq.functions import RectFunction
 from matplotlib import pyplot as plt
 
 if __name__ == "__main__":
@@ -15,28 +14,14 @@ if __name__ == "__main__":
 
     logger = logging.getLogger(__name__)
 
-    seq = QuackSequence("SEPC")
-    seq.add_pulse_event("pi-half", "3u", 100, 0, RectFunction())
-    # This causes the phase to cycle through 0, 90, 180, 270
-    seq.set_tx_n_phase_cycles("pi-half", 4)
-
-    seq.add_blank_event("te-half", "150u")
-    # For the second pulse we just need a phase of 180
-    seq.add_pulse_event("pi", "6u", 100, 180, RectFunction())
-    seq.add_blank_event("blank", "50u")
-
-    seq.add_readout_event("rx", "200u")
-    # Readout scheme for phase cycling TX pulses have the scheme 0 90 180 270 for the first pulse and 180 always for the second pulse
-    readout_scheme = [[1, 0], [1, 90], [1, 180], [1, 270]]
-
-    seq.set_rx_readout_scheme("rx", readout_scheme)
-
     sim = Simulator()
     sim.set_averages(100)
 
     sim.settings.noise = 1 # microvolts
 
-    result = sim.run_sequence(seq)
+    SEPC = create_SEPC()
+
+    result = sim.run_sequence(SEPC)
     # Plot time and frequency domain next to each other
     plt.subplot(1, 2, 1)
     plt.title("Time domain Simulation of BiPh3 SEPC")

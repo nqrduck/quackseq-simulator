@@ -10,9 +10,8 @@ This also works for Samples with spin > 1.
 
 import logging
 
+from quackseq.sequences.COMPFID import create_COMPFID
 from quackseq_simulator.simulator import Simulator
-from quackseq.pulsesequence import QuackSequence
-from quackseq.functions import RectFunction
 from matplotlib import pyplot as plt
 
 if __name__ == "__main__":
@@ -20,24 +19,14 @@ if __name__ == "__main__":
 
     logger = logging.getLogger(__name__)
 
-    seq = QuackSequence("COMPFID")
-    seq.add_pulse_event("tx1", "3u", 100, 0, RectFunction())
-    seq.add_pulse_event("tx2", "6u", 100, 45, RectFunction())
-    # This makes the phase 45, 135, 225, 315
-    seq.set_tx_n_phase_cycles("tx2", 4)
-    seq.add_blank_event("blank", "5u")
-    
-    seq.add_readout_event("rx", "100u")
-
-    # No phase shifiting of the receive data but weighting of -1 for the 45 degree pulse, +1 for the 135 degree pulse, -1 for the 225 degree pulse and +1 for the 315 degree pulse
-    readout_scheme = [[1, 0], [-1, 0], [1, 0], [-1, 0]]
-
     sim = Simulator()
     sim.set_averages(100)
 
-    sim.settings.noise = 1 # microvolts
+    sim.settings.noise = 1  # microvolts
 
-    result = sim.run_sequence(seq)
+    COMPFID = create_COMPFID()
+
+    result = sim.run_sequence(COMPFID)
     # Plot time and frequency domain next to each other
     plt.subplot(1, 2, 1)
     plt.title("Time domain Simulation of BiPh3 COMPFID")
