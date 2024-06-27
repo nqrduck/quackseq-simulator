@@ -6,7 +6,7 @@ import numpy as np
 
 from quackseq.spectrometer.spectrometer_controller import SpectrometerController
 from quackseq.measurement import Measurement
-from quackseq.pulseparameters import TXPulse, RXReadout
+from quackseq.pulseparameters import TXPulse
 from quackseq.pulsesequence import QuackSequence
 
 from nqr_blochsimulator import Sample, Simulation, PulseArray
