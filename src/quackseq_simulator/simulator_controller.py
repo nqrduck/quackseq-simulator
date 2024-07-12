@@ -31,7 +31,7 @@ class SimulatorController(SpectrometerController):
         logger.debug("Starting simulation")
 
         # This needs to be called to update the phase array
-        sequence.phase_table.update_phase_array()
+        sequence.phase_table.generate_phase_array()
 
         # Get the number of phasecycles
         number_phasecycles = sequence.phase_table.n_phase_cycles
@@ -87,11 +87,11 @@ class SimulatorController(SpectrometerController):
             else:
                 measurement_data.add_dataset(tdx, result / simulation.averages)
 
-            if readout_scheme:
+            if readout_scheme.any():
                 measurement_data.phase_shift(readout_scheme[cycle][1], cycle)
 
 
-        if readout_scheme and number_phasecycles > 1:
+        if readout_scheme.any() and number_phasecycles > 1:
             # Apply the readout scheme
             tdy = np.zeros(len(measurement_data.tdx[0]), dtype=np.complex128)
             for cycle in range(number_phasecycles):
