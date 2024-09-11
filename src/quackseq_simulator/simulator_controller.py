@@ -87,7 +87,7 @@ class SimulatorController(SpectrometerController):
             else:
                 measurement_data.add_dataset(tdx, result / simulation.averages)
 
-            if readout_scheme.any():
+            if (rx_begin and rx_stop) and readout_scheme.any():
                 measurement_data.phase_shift(readout_scheme[cycle][1], cycle)
 
 
