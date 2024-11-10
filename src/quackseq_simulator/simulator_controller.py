@@ -88,14 +88,14 @@ class SimulatorController(SpectrometerController):
                 measurement_data.add_dataset(tdx, result / simulation.averages)
 
             if (rx_begin and rx_stop) and readout_scheme.any():
-                measurement_data.phase_shift(readout_scheme[cycle][1], cycle)
+                measurement_data.phase_shift(readout_scheme[cycle], cycle)
 
 
         if readout_scheme.any() and number_phasecycles > 1:
             # Apply the readout scheme
             tdy = np.zeros(len(measurement_data.tdx[0]), dtype=np.complex128)
             for cycle in range(number_phasecycles):
-                tdy += (readout_scheme[cycle][0] * measurement_data.tdy[cycle])
+                tdy += (measurement_data.tdy[cycle])
 
             measurement_data.add_dataset(measurement_data.tdx[0], tdy)
 
