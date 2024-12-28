@@ -39,8 +39,6 @@ class SimulatorController(SpectrometerController):
         # Empty measurement object
         measurement_data = None
 
-        readout_scheme = None
-
         for cycle in range(number_phasecycles):
 
             sample = self.get_sample_from_settings()
@@ -72,6 +70,8 @@ class SimulatorController(SpectrometerController):
                 evidx = np.where((tdx > rx_begin) & (tdx < rx_stop))[0]
                 tdx = tdx[evidx]
                 result = result[evidx]
+                # Add empty second dimension to result so it has shape (n_points, 1)
+                result = np.expand_dims(result, axis=1)
 
             # Measurement name date + module + target frequency + averages + sequence name
             name = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Simulator - {self.simulator.model.target_frequency / 1e6} MHz - {self.simulator.model.averages} averages - {sequence.name}"
@@ -85,7 +85,7 @@ class SimulatorController(SpectrometerController):
                     sample.resonant_frequency,
                 )
             else:
-                measurement_data.add_dataset(tdx, result / simulation.averages)
+                measurement_data.add_dataset(result / simulation.averages)
 
             if (rx_begin and rx_stop) and phase:
                 logger.debug(f"Phase: {phase}")
@@ -94,15 +94,12 @@ class SimulatorController(SpectrometerController):
 
         if phase and number_phasecycles > 1:
             # Apply the readout scheme
-            tdy = np.zeros(len(measurement_data.tdx[0]), dtype=np.complex128)
-            for cycle in range(number_phasecycles):
-                tdy += (measurement_data.tdy[cycle])
+            tdy_sum = np.sum(measurement_data.tdy, axis=1, keepdims=True)
 
-            measurement_data.add_dataset(measurement_data.tdx[0], tdy)
+            measurement_data.add_dataset(tdy_sum)
 
-            logger.info(f"Length of tdy: {len(tdy)}")
-        
-
+        logger.debug(f"Measurement data shape: {measurement_data.tdy.shape}")
+    
         return measurement_data
 
     def get_sample_from_settings(self) -> Sample:
