@@ -71,7 +71,8 @@ class SimulatorController(SpectrometerController):
                 tdx = tdx[evidx]
                 result = result[evidx]
                 # Add empty second dimension to result so it has shape (n_points, 1)
-                result = np.expand_dims(result, axis=1)
+            
+            result = np.expand_dims(result, axis=1)
 
             # Measurement name date + module + target frequency + averages + sequence name
             name = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Simulator - {self.simulator.model.target_frequency / 1e6} MHz - {self.simulator.model.averages} averages - {sequence.name}"
