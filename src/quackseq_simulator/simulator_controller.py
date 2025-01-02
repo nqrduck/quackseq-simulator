@@ -5,7 +5,7 @@ from datetime import datetime
 import numpy as np
 
 from quackseq.spectrometer.spectrometer_controller import SpectrometerController
-from quackseq.measurement import Measurement
+from quackseq.measurement import Measurement, MeasurementError
 from quackseq.pulseparameters import TXPulse
 from quackseq.pulsesequence import QuackSequence
 
@@ -22,7 +22,7 @@ class SimulatorController(SpectrometerController):
         super().__init__()
         self.simulator = simulator
 
-    def run_sequence(self, sequence: QuackSequence) -> None:
+    def run_sequence(self, sequence: QuackSequence) -> Measurement:
         """This method  is called when the start_measurement signal is received from the core.
 
         It will becalled if the simulator is the  active  spectrometer.
@@ -35,6 +35,10 @@ class SimulatorController(SpectrometerController):
 
         # Get the number of phasecycles
         number_phasecycles = sequence.phase_table.n_phase_cycles
+
+        if number_phasecycles == 0:
+            error = MeasurementError("Error", "Pulse sequence is not valid. Did you set an TX event?")
+            return error
 
         # Empty measurement object
         measurement_data = None
@@ -51,7 +55,8 @@ class SimulatorController(SpectrometerController):
                 pulse_array = self.translate_pulse_sequence(sequence, dwell_time, cycle)
             except AttributeError:
                 logger.warning("Could not translate pulse sequence")
-                return
+                error = MeasurementError("Error", "Could not translate pulse sequence")
+                return error
 
             simulation = self.get_simulation(sample, pulse_array)
 
@@ -70,8 +75,8 @@ class SimulatorController(SpectrometerController):
                 evidx = np.where((tdx > rx_begin) & (tdx < rx_stop))[0]
                 tdx = tdx[evidx]
                 result = result[evidx]
-                # Add empty second dimension to result so it has shape (n_points, 1)
-            
+
+            # Add empty second dimension to result so it has shape (n_points, 1)
             result = np.expand_dims(result, axis=1)
 
             # Measurement name date + module + target frequency + averages + sequence name
